@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  SEKRETARIS
+  BENDAHARA
+}
+
+enum JenisTransaksi {
+  PEMASUKAN
+  PENGELUARAN
+}
+
+model User {
+  id                Int      @id @default(autoincrement())
+  nama              String
+  email             String   @unique
+  password          String
+  role              Role
+  createdAt         DateTime @default(now())
+
+  // Relations
+  jemaat            Jemaat?
+  renungan          Renungan[]
+  jadwal            Jadwal[]             // Updated relation: Jadwal records created by this user
+  transaksiKeuangan TransaksiKeuangan[]
+}
+
+model Jemaat {
+  id                Int      @id @default(autoincrement())
+  userId            Int      @unique
+  img               String
+  namaLengkap       String
+  alamat            String
+  tanggalLahir      DateTime
+  nomorHp           String
+  statusKeanggotaan Boolean  @default(true)
+  createdAt         DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Jadwal {
+  id         Int      @id @default(autoincrement())
+  judul      String
+  tanggal    DateTime
+  deskripsi  String
+  image      String?
+  createdAt  DateTime @default(now())
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id])
+}
+
+model Renungan {
+  id        Int      @id @default(autoincrement())
+  judul     String
+  img       String
+  isi       String
+  tanggal   DateTime
+  userId    Int
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model TransaksiKeuangan {
+  id         Int             @id @default(autoincrement())
+  jenis      JenisTransaksi
+  jumlah     Float
+  keterangan String
+  tanggal    DateTime
+  userId     Int
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
